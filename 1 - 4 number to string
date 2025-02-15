@@ -1,0 +1,158 @@
+#include <vector>
+#include <iostream>
+#include <iomanip>
+#include <string>
+#include <fstream>
+#include <ctime>
+#include "Mylib.h"
+
+using namespace std;
+
+// abu had's solution
+string DigitToString(long long Number) {
+	
+
+	if (Number == 0)
+		return "";
+
+	if (Number <= 10) {
+		string NumbersFrom1To10[] = { "","one" , "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"};
+		return NumbersFrom1To10[Number];
+	}
+
+	else if (Number >= 11 && Number <= 19) {
+		string NumbersFrom11To19[] = { "eleven" ,"twelve", "thirteen", "forteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen" };
+		return NumbersFrom11To19[Number - 11];
+	}
+
+	else if (Number >= 20 && Number <=99) {
+		string DecadesNumbers[] = { "","ten" ,"tweny" , "thirty", "fourty" , "fifty", "sixty" , "seventy" , "eighy", "ninety"};
+		
+		return DecadesNumbers[(Number / 10)] + " " + DigitToString(Number % 10);
+	}
+
+	else if (Number >= 100 && Number <= 999) {
+		
+		if (Number < 200 )
+			return  "one hundred " + DigitToString(Number % 100);
+		else
+			return DigitToString(Number / 100) + " hundreds " + DigitToString(Number % 100);
+	
+	}
+
+	else if (Number >= 1000 && Number < 999999) {
+	
+		if (Number < 2000)
+			return "one thousand " + DigitToString(Number % 1000);
+		else
+			return DigitToString(Number / 1000) + " thousands " + DigitToString(Number % 1000);
+	
+	}
+	
+
+	else if (Number >= 1000000 && Number < 999999999) {
+	
+		if (Number < 2000000)
+			return "one million " + DigitToString(Number %1000000);
+		else
+			return DigitToString(Number / 1000000) + " million " + DigitToString(Number % 1000000);
+	}
+	
+
+	else if (Number >= 1000000000 && Number < 10000000000000) {
+		int RightNineNumbers = Number % 1000000000;
+		short LeftThreeNumbers = Number / 1000000000;
+		if (Number < 2000000000)
+			return "one billion " + DigitToString(Number % 1000000000);
+		else
+			return DigitToString(Number / 1000000000) + " billion " + DigitToString(Number % 1000000000);
+
+	}
+
+
+}
+
+// my solution
+enum enNumbericalPlaceValue {hundreds = 0 , thousands, millions, billions, trillions};
+void SplitIntoGroupsOfThree(long long Number, int SplitedNumberArr[], short & size) {
+	short index = 0 ;
+	
+	while (Number != 0) {
+		SplitedNumberArr[index++] = Number % 1000;
+		Number /= 1000;
+	}
+	
+	size = index;
+
+}
+string NumberToString(long long Number) {
+
+	if (Number == 0)
+		return "zero";
+
+	string result = "";
+
+	
+	string PlaceVlaues[] = { "", "thousand" , "million", "billion", "trillion" };
+
+	
+	int groups[15];
+	
+	short GroupContent = 0;
+	
+	SplitIntoGroupsOfThree(Number, groups, GroupContent);
+
+
+	for (enNumbericalPlaceValue PlaceValue = hundreds; PlaceValue < GroupContent; PlaceValue = enNumbericalPlaceValue(PlaceValue + 1)) {
+		
+		Number = groups[PlaceValue];
+		
+		string PartString = "";
+
+		if (Number == 0)
+			continue;
+
+		if (Number <= 10) {
+			string ones[] = { "","one" , "two", "three", "four", "five", "six", "seven", "eight", "nine","ten"};
+			PartString = ones[Number] ;
+		}
+
+
+		else if (Number >= 11 && Number <= 19) {
+			string teens[] = { "eleven" ,"twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen" };
+			PartString = teens[Number - 11] ;
+		}
+
+		else if (Number >= 20 && Number <= 99) {
+			string tens[] = { "" ,"","twenty" , "thirty", "forty" , "fifty", "sixty" , "seventy" , "eighty", "ninety"};
+			PartString = tens[Number / 10] + " " + NumberToString(Number % 10);
+		}
+
+		else if (Number >= 100 && Number <= 999) {
+
+			if (Number % 100 == 0)
+				PartString = NumberToString(Number / 100) + " hundred";
+			else
+				PartString = NumberToString(Number / 100) + " hundred " + NumberToString(Number % 100);
+		}
+		
+		
+		result = PartString + " " + PlaceVlaues[PlaceValue] + " " + result;
+		
+
+	}
+	
+	return String::TrimRight(result);
+}
+
+
+int main() {
+	
+	while (true)
+	{
+		double num = Read::ReadDouble("Enter Number : ");
+		cout << NumberToString(num) << endl;
+		cout << DigitToString(num) << endl;
+	}
+	return 0;
+}
