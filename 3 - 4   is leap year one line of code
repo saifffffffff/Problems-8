@@ -1,0 +1,22 @@
+#include <vector>
+#include <iostream>
+#include <iomanip>
+#include <string>
+#include <fstream>
+#include <ctime>
+#include "Mylib.h"
+
+using namespace std;
+
+bool IsLeapYearOneLine(short year) {
+	return (year % 400 == 0) || (year % 100 != 0 && year % 4 == 0);
+}
+
+int main() {
+	
+	if (IsLeapYearOneLine(Read::ReadInt("Enter Year : ")))
+		cout << "yes";
+	else
+		cout << "no";
+	return 0;
+}
