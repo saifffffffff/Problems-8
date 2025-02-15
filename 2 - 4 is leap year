@@ -1,0 +1,26 @@
+#include <vector>
+#include <iostream>
+#include <iomanip>
+#include <string>
+#include <fstream>
+#include <ctime>
+#include "Mylib.h"
+
+using namespace std;
+
+bool IsLeapYear(short year) {
+	if (year % 400) 
+		return true;
+	if ((year % 4 == 0) && (year % 100 != 0))
+		return true;
+	return false;
+}
+
+int main() {
+	
+	if (IsLeapYear(Read::ReadInt("Enter Year : ")))
+		cout << "yes";
+	else
+		cout << "no";
+	return 0;
+}
