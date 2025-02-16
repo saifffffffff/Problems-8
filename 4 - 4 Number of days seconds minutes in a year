@@ -1,0 +1,36 @@
+#include <vector>
+#include <iostream>
+#include <iomanip>
+#include <string>
+#include <fstream>
+#include <ctime>
+#include "Mylib.h"
+
+using namespace std;
+
+bool IsLeapYear(short year) {
+	return (year % 400 == 0) || (year % 100 != 0 && year % 4 == 0);
+}
+
+
+short DaysInYear(short year) {
+	return IsLeapYear(year) ? 366 : 365;
+}
+
+short HoursInYear(short year) {
+	return DaysInYear(year) * 24 ;
+}
+
+int MinutesInYear(short year) {
+	return HoursInYear(year) * 60.f;
+}
+int SecondsInYear(short year) {
+	return MinutesInYear(year) * 60.f;
+}
+
+int main() {
+	cout << DaysInYear(1971) << endl;
+	cout << HoursInYear(1971) << endl;
+	cout << MinutesInYear(1971) << endl;
+	cout << SecondsInYear(1971);
+}
