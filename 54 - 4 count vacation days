@@ -1,0 +1,511 @@
+#include <vector>
+#include <iostream>
+#include <iomanip>
+#include <string>
+#include <fstream>
+#include <ctime>
+#include "Mylib.h"
+#pragma warning (disable : 4996)
+
+using namespace std;
+
+struct stDate {
+	short day;
+	short month;
+	int year;
+};
+
+bool IsLeapYear(int year) {
+	return (year % 400 == 0) || (year % 100 != 0 && year % 4 == 0);
+}
+short NumberOfDaysInYear(int year) {
+	return IsLeapYear(year) ? 366 : 365;
+}
+short NumberOfHoursInYear(int year) {
+	return NumberOfDaysInYear(year) * 24;
+}
+int NumberOfMinutesInYear(int year) {
+	return NumberOfHoursInYear(year) * 60.f;
+}
+int NumberOfSecondsInYear(int year) {
+	return NumberOfMinutesInYear(year) * 60.f;
+}
+
+
+short NumberOfDaysInMonth(short month, int year) {
+
+
+	if (month > 12 || month < 1)
+		return 0;
+	short DaysInMonth[12] = { 31,28 ,31 ,30,31,30,31,31,30,31,30, 31 };
+
+	return month == 2 ? (IsLeapYear(year) ? 29 : 28) : DaysInMonth[month - 1];
+
+}
+short NumberOfHoursInMonth(short month, int year) {
+
+	return NumberOfDaysInMonth(month, year) * 24;
+
+}
+int NumberOfMinutesInMonth(short month, int year) {
+	return NumberOfHoursInMonth(month, year) * 60;
+}
+int NumberOfSecondsInMonth(short month, int year) {
+	return NumberOfMinutesInMonth(month, year) * 60;
+}
+
+
+short DayOfWeekOrder(short day , short month , int year) {
+
+	short a = (14 - month) / 12;
+	short y = year - a;
+	short m = month + 12 * a - 2;
+	short d = (int)(day + y + (y / 4) - (y / 100) + (y / 400) + ((31 * m) / 12)) % 7;
+
+	return d;
+
+}
+short DayOfWeekOrder(stDate date) {
+
+	return DayOfWeekOrder(date.day, date.month, date.year);
+
+}
+
+string DayName(short DayOrder) {
+	string days[] = { "sunday", "monday", "tuesday", "wednesday","thursday", "friday" , "saturday" };
+	return days[DayOrder];
+}
+string DayShortName(short DayOrder) {
+	string days[] = { "Sun", "Mon", "Tue", "Wed","Thu", "Fri" , "Sat" };
+	return days[DayOrder];
+}
+
+
+string MonthShortName(short month) {
+	string months[] = { "Jan", "Feb" ,"Mar" , "Apr" , "May", "Jun", "Jul", "Aug","Sep", "Oct", "Nov","Dec" };
+
+	return months[month - 1];
+}
+void PrintMonthCalender(short month, int year) {
+
+	short FirstDay = DayOfWeekOrder({ 1, month, year });
+	short NumberOfDays = NumberOfDaysInMonth(month, year);
+
+	printf("________________%s________________\n\n", MonthShortName(month).c_str());
+	printf("  sun  mon  tue  wed  thu  fri  sat\n");
+	int i;
+	for (i = 0; i < FirstDay; i++)
+		cout << "     ";
+
+	for (int j = 1; j <= NumberOfDays; j++) {
+		printf("%5d", j);
+
+		if (++i == 7)
+		{
+			cout << endl;
+			i = 0;
+		}
+	}
+	printf("\n___________________________________\n");
+
+
+
+}
+void PrintYearCalender(int year) {
+	cout << "___________________________________\n\n";
+	cout << "            " << year << " - calender\n";
+	cout << "___________________________________\n\n";
+	for (short month = 1; month <= 12; month++) {
+		PrintMonthCalender(month, year);
+		cout << endl;
+	}
+}
+
+
+short TotalDaysFromTheBegingOfYear(short day , short month , int year) {
+	short TotalDays = 0;
+	for (short m = 1; m < month; m++)
+		TotalDays += NumberOfDaysInMonth(m, year);
+	TotalDays += day;
+	return TotalDays;
+}
+short TotalDaysFromTheBegingOfYear(stDate date) {
+	
+	return TotalDaysFromTheBegingOfYear(	date.day , date.month, date.year);
+}
+
+
+stDate FillRandomDate() {
+	stDate date;
+	date.year = Random::GenerateRandomNumber(1, INT_MAX);
+	date.month = Random::GenerateRandomNumber(1, 12);
+	date.day = Random::GenerateRandomNumber(1, NumberOfDaysInMonth(date.month, date.year));
+	return date;
+}
+
+stDate GetDateFromDayOrderInWeek(short days, int year) {
+
+	stDate Date;
+
+	Date.year = year;
+	Date.month = 1;
+	short RemainingDays = days;
+
+	short DaysInMonth;
+	while (true) {
+		DaysInMonth = NumberOfDaysInMonth(Date.month, year);
+		if (RemainingDays > DaysInMonth) {
+
+			RemainingDays -= DaysInMonth;
+			Date.month++;
+
+		}
+		else {
+			Date.day = RemainingDays;
+			break;
+
+		}
+	}
+
+	return Date;
+
+}
+void PrintDate(stDate Date) {
+
+	cout << Date.day << "/" << Date.month << "/" << Date.year << endl;
+
+}
+
+stDate AddDaysToDate(short days, stDate date) {
+
+	int remainingDays = days + TotalDaysFromTheBegingOfYear(date);
+
+	date.month = 1;
+	short MonthDays;
+	while (true) {
+
+		MonthDays = NumberOfDaysInMonth(date.month, date.year);
+		if (remainingDays < MonthDays) {
+			
+			date.day = (remainingDays == 0 ? remainingDays+1 : remainingDays);
+			break;
+		}
+
+		else {
+			remainingDays -= MonthDays;
+			date.month++;
+			if (date.month > 12) {
+				date.month = 1;
+				date.year++;
+			}
+
+		}
+	}
+	return date;
+}
+stDate ReadDate() {
+	stDate date;
+	date.year = Read::ReadIntInRange(0, INT_MAX, "Enter year : ");
+	date.month = Read::ReadIntInRange(1, 12, "Enter month : ");
+	date.day = Read::ReadIntInRange(1, NumberOfDaysInMonth(date.month, date.year), "Enter day : ");
+	return date;
+}
+bool IsDate1_OlderThan_Date2(stDate date1, stDate date2) {
+	return (date1.year < date2.year) ? true : ((date1.year == date2.year) ? ((date1.month < date2.month) ? true : ((date1.month == date2.month) ? ((date1.day < date2.day) ? true : false) : false)) : false);
+}
+bool IsDate1EqualsToDate2(stDate date1, stDate date2) {
+	return (date1.year == date2.year) && (date1.month == date2.month) && (date1.day == date2.day);
+}
+bool IsLastDayInMonth(stDate date) {
+	return date.day == NumberOfDaysInMonth(date.month, date.year) ? true : false;
+}
+bool IsLastMonthInYear(stDate date) {
+	return (date.month == 12);
+}
+stDate IncreaseDateByOneDay(stDate date) {
+	if (IsLastDayInMonth(date))
+	{
+		if (IsLastMonthInYear(date))
+		{
+			date.year++;
+			date.day = date.month = 1;
+		}
+		else {
+			date.month++;
+			date.day = 1;
+		}
+
+	}
+	else {
+		date.day++;
+	}
+	return date;
+}
+stDate GetTodayDate() {
+
+	long long t = time(0);
+	tm* now = localtime(&t);
+
+	stDate TodayDate;
+
+	TodayDate.year = now->tm_year + 1900;
+	TodayDate.month = now->tm_mon + 1;
+	TodayDate.day = now->tm_mday;
+
+	return TodayDate;
+}
+void SwapDates(stDate& date1, stDate& date2) {
+	stDate temp;
+	temp.day = date1.day;
+	temp.month = date1.month;
+	temp.year = date1.year;
+
+	date1.day = date2.day;
+	date1.month = date2.month;
+	date1.year = date2.year;
+
+	date2.day = temp.day;
+	date2.month = temp.month;
+	date2.year = temp.year;
+
+
+
+
+}
+int GetDifferenceInDays(stDate date1, stDate date2, bool IncludeEndDay = false) {
+	int days = 0;
+	short flag = 1;
+	if (!IsDate1_OlderThan_Date2(date1, date2)) {
+		SwapDates(date1, date2);
+		flag *= -1;
+	}
+
+	while (IsDate1_OlderThan_Date2(date1, date2)) {
+		days++;
+		date1 = IncreaseDateByOneDay(date1);
+	}
+
+
+	return IncludeEndDay ? ++days * flag : days * flag;
+
+}
+
+
+stDate IncreaseDateByOneWeek(stDate date) {
+
+	for (short i = 1; i <= 7; i++)
+		date = IncreaseDateByOneDay(date);
+	return date;
+}
+
+stDate IncreaseDateByOneMonth(stDate date) {
+
+	if (date.month == 12)
+	{
+		date.year++;
+		date.month = 1;
+	}
+	else {
+		date.month++;
+	}
+	short DaysInCurrentMonth = NumberOfDaysInMonth(date.month, date.year);
+	if (date.day > DaysInCurrentMonth)
+		date.day = DaysInCurrentMonth;
+
+	return date;
+
+}
+
+stDate IncreaseDateByOneYear(stDate date) {
+	date.year++;
+	return date;
+}
+stDate IncreaseDateByOneDecade(stDate date) {
+	date.year += 10;
+	return date;
+}
+stDate IncreaseDateByOneCentury(stDate date) {
+	date.year += 100;
+	return date;
+}
+stDate IncreaseDateByOneMillennium(stDate date) {
+	date.year += 1000;
+	return date;
+}
+
+stDate IncreaseDateByXWeeks(int weeksToAdd, stDate date) {
+	for (int i = 0; i < weeksToAdd; i++)
+		date = IncreaseDateByOneWeek(date);
+	return date;
+}
+stDate IncreaseDateByXMonths(int MonthsToAdd, stDate date) {
+	for (int i = 0; i < MonthsToAdd; i++)
+		date = IncreaseDateByOneMonth(date);
+	return date;
+}
+stDate IncreaseDateByXYears(int yearsToAdd, stDate date) {
+	date.year += yearsToAdd;
+	return date;
+}
+stDate IncreaseDateByXDecades(int DecadesToAdd, stDate date) {
+	date.year += (DecadesToAdd * 10);
+	return date;
+}
+
+
+stDate DecreaseDateByOneDay(stDate date) {
+
+	if (date.day == 1) {
+		if (date.month == 1) {
+			date.month = 12;
+			date.year--;
+		}
+
+		else {
+			date.month--;
+		}
+
+		date.day = NumberOfDaysInMonth(date.month, date.year);
+	}
+	else {
+		date.day--;
+	}
+
+
+	return date;
+}
+stDate DecreaseDateByOneWeek(stDate date) {
+
+	for (short i = 0; i < 7; i++) {
+		date = DecreaseDateByOneDay(date);
+	}
+
+	return date;
+}
+stDate DecreaseDateByOneMonth(stDate date) {
+	if (date.month == 1)
+	{
+		date.year--;
+		date.month = 12;
+	}
+
+	else
+	{
+		date.month--;
+	}
+	short MonthDays = NumberOfDaysInMonth(date.month, date.year);
+
+	if (date.day > MonthDays)
+		date.day = MonthDays;
+
+	return date;
+
+}
+stDate DecreaseDateByOneYear(stDate date) {
+	date.year--;
+	return date;
+}
+stDate DecreaseDateByOneDecade(stDate date) {
+	date.year -= 10;
+	return date;
+}
+stDate DecreaseDateByOneCentury(stDate date) {
+	date.year -= 100;
+	return date;
+}
+stDate DecreaseDateByOneMillennium(stDate date) {
+	date.year -= 1000;
+	return date;
+}
+
+stDate DecreaseDateByXDays(int DaysToDecrease, stDate date) {
+	for (int i = 0; i < DaysToDecrease; i++)
+		date = DecreaseDateByOneDay(date);
+	return date;
+}
+
+stDate DecreaseDateByXWeeks(int WeeksToDecrease, stDate date) {
+	for (int i = 0; i < WeeksToDecrease; i++)
+		date = DecreaseDateByOneWeek(date);
+	return date;
+}
+
+stDate DecreaseDateByXMonths(int MonthsToDecrease, stDate date) {
+	for (int i = 0; i < MonthsToDecrease; i++)
+		date = DecreaseDateByOneMonth(date);
+	return date;
+}
+
+stDate DecreaseDateByXYears(int YearsToDecrease, stDate date) {
+	date.year += YearsToDecrease;
+	return date;
+}
+stDate DecreaseDateByXDecades(int DecadesToDecrease, stDate date) {
+	date.year += (10 * DecadesToDecrease);
+	return date;
+}
+
+
+bool IsEndOfWeek(stDate date) {
+
+	return (DayOfWeekOrder(date) == 6);
+}
+
+bool IsWeekEnd(stDate date) {
+	short dayOrder = DayOfWeekOrder(date);
+	return  dayOrder == 5 || dayOrder == 6;
+}
+bool IsBusinessDay(stDate date) {
+	return !IsWeekEnd(date);
+}
+
+short DaysUntilEndOfWeek(stDate date) {
+	return 6 - DayOfWeekOrder(date);
+}
+short DaysUntilEndOfMonth(stDate date) {
+	
+	stDate EndOfMonthDate = { NumberOfDaysInMonth(date.month,date.year) , date.month , date.year };
+
+	return GetDifferenceInDays(EndOfMonthDate, date,true);
+	
+	//another code 
+	/*
+	short DaysInMonth = NumberOfDaysInMonth(date.month, date.year);
+	return (DaysInMonth - date.day) + 1;
+	*/
+
+
+}
+short DaysUntilEndOfYear(stDate date) {
+
+	stDate EndOfYearDate = { 31,12,date.year };
+	return GetDifferenceInDays(EndOfYearDate, date,true);
+	// another code
+	/*
+	return (NumberOfDaysInYear(date.year) - TotalDaysFromTheBegingOfYear(date)) + 1;*/
+
+}
+void PrintDateAndDay(stDate date) {
+	string day = DayName(DayOfWeekOrder(date));
+	cout << "Today is " << day << " , " << date.day << "/" << date.month << "/" << date.year << endl;
+}
+
+
+
+// problem 54 - 4
+
+int CountVacationDays(stDate DateFrom, stDate DateTo) {
+	int VacatoinDaysCount = 0;
+	while (!IsDate1EqualsToDate2(DateFrom, DateTo)) {
+		if (IsBusinessDay(DateFrom))
+			VacatoinDaysCount++;
+		DateFrom = IncreaseDateByOneDay(DateFrom);
+	}
+	return VacatoinDaysCount;
+}
+
+int main() {
+	srand(time(0));
+	return 0;
+}
+
